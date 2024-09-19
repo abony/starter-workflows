@@ -9,7 +9,7 @@ jobs:
       - name: Check API Status Until Outcome is PASS or NOT_REACHED Changes
         id: check_status
         run: |
-          jobId=3430088 # There are issues with running virtuoso from API, for testing purpose I am providing direct job fail= 3430088, pass = 3457301
+          jobId=3489288 # There are issues with running virtuoso from API, for testing purpose I am providing direct job fail= 3430088, pass = 3457301
           outcome="NOT_REACHED"
           max_retries=180  # Maximum number of retries before giving up (30 mins to give the tests run)
           retry_count=0
