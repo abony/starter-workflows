@@ -1,0 +1,54 @@
+
+name: Run Virtuoso tests
+run-name: ${{ github.actor }} triggered running Virtuoso test
+on: [push]
+jobs:
+  trigger-virtuoso-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check API Status Until Outcome is PASS or NOT_REACHED Changes
+        id: check_status
+        run: |
+          jobId=3430088 # There are issues with running virtuoso from API, for testing purpose I am providing direct job fail= 3430088, pass = 3457301
+          outcome="NOT_REACHED"
+          max_retries=180  # Maximum number of retries before giving up (30 mins to give the tests run)
+          retry_count=0
+          while [ "$outcome" = "NOT_REACHED" ]; do
+            response=$(curl --silent --fail --header "Authorization: Bearer ${{ secrets.VIRTUOSO_TOKEN }}" -X GET https://api.virtuoso.qa/api/executions/$jobId/status)
+            if [ $? -ne 0 ]; then
+              echo "Failed to get response from Virtuoso API"
+              exit 1
+            fi
+            outcome=$(echo "$response" | jq -r '.item.journeyStatistics.outcome')
+            if [ "$outcome" = "PASS" ]; then
+              echo "Test Passed Successfully"
+              exit 0
+            fi
+            retry_count=$((retry_count + 1))
+            if [ "$retry_count" -ge "$max_retries" ]; then
+              echo "Reached maximum retries, sending email"
+              exit 1
+            fi
+            echo "Waiting for 10 seconds before rechecking..."
+            sleep 10
+          done
+          echo "Test did not pass successfully, email will be sent"
+          exit 1
+      - name: Checkout repository
+        if: failure()
+        uses: actions/checkout@v3
+      - name: Set up environment
+        if: failure()
+        run: |
+          echo "SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}" >> $GITHUB_ENV
+      - name: Send email with SendGrid
+        if: failure()
+        run: |
+          curl -X POST https://api.sendgrid.com/v3/mail/send \
+              --header "Authorization: Bearer $SENDGRID_KEY" \
+              --header "Content-Type: application/json" \
+              --data @email.json
+          if [ $? -ne 0 ]; then
+            echo "Failed to send email with SendGrid"
+            exit 1
+          fi

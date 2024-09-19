@@ -1,0 +1,21 @@
+{
+    "personalizations": [
+      {
+        "to": [
+          {
+            "email": "anetaderkova@gmail.com"
+          }
+        ],
+        "subject": "Virtuoso tests failed"
+      }
+    ],
+    "from": {
+      "email": "anetaderkova@gmail.com"
+    },
+    "content": [
+      {
+        "type": "text/plain",
+        "value": "Check your tests"
+      }
+    ]
+  }
