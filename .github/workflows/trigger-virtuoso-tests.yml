@@ -1,6 +1,6 @@
 
 name: Run Virtuoso tests
-run-name: ${{ github.actor }} triggered running Virtuoso test commit
+run-name: ${{ github.actor }} triggered running Virtuoso test commit add commit
 on: [push]
 jobs:
   trigger-virtuoso-tests:
